@@ -1,8 +1,8 @@
-export const mapObjectToArray = (obj: any) => {
+function mapObjectToArray (obj: any, keyName: string){
     const mappedDatas: any[] = []
     for (const key in obj) {
         if (Object.prototype.hasOwnProperty.call(obj, key)) {
-            mappedDatas.push({ ...obj[key], id: key })
+            mappedDatas.push({ ...obj[key], [keyName]: key })
         }
     }
     return mappedDatas
@@ -15,62 +15,37 @@ function isFirebaseValidKey(text: any) {
         text.length == 20
 }
 
-const listProperties = (obj: any): string[] => Object.getOwnPropertyNames(obj)
+function listProperties(obj: any): string[] {
+    return Object.getOwnPropertyNames(obj)
+}
 
-const hasAllFirebaseKeysInside = (variable: any) => listProperties(variable).every(isFirebaseValidKey)
+function hasAllFirebaseKeysInside(variable: any): boolean {
+    return listProperties(variable).every(isFirebaseValidKey)
+}
 
-const formatter = (objectToFormat: any, keyProperty = 'id'): any => {
-    const isAnIterableProperty = (property: any): boolean => hasAllFirebaseKeysInside(objectToFormat[property]) && property in objectToFormat    
+/**
+ * Flattens the format recieved from the Firebase Realtime Database
+ * @constructor
+ * @param {JSON} data - The data that's attempt to format, it should be extracted from Firebase's ```DataSnapshot``` .
+ * @param {string} [key='id'] - Name of the new attribute that contains the entities's ids.
+ */
+export default function firebaseDbFormatter(data: any, key = 'id'): any {
+
+    const isAnIterableProperty = (property: any): boolean => hasAllFirebaseKeysInside(data[property]) && property in data
 
     const hasIterableProperties = (element: any): boolean => listProperties(element).some((property: any) => isAnIterableProperty(property))
 
-    if (hasIterableProperties(objectToFormat)) {
-        const properties = listProperties(objectToFormat)
+    if (hasIterableProperties(data)) {
+        const properties = listProperties(data)
         properties.map(property => {
             if (isAnIterableProperty(property)) {
-                objectToFormat[property] = mapObjectToArray(objectToFormat[property])
-                objectToFormat[property].forEach((nestedObj: any) => {
-                    formatter(nestedObj, keyProperty)
+                data[property] = mapObjectToArray(data[property], key)
+                data[property].forEach((nestedObj: any) => {
+                    firebaseDbFormatter(nestedObj, key)
                 })
             }
         })
     }
 
-    return objectToFormat
+    return data
 }
-
-export default formatter
-
-
-/// DEBUG BOOTSTRAP
-const input = {
-    'name': 'Sebastian De Vita',
-    'notebooks': {
-        '-J4Dk_75HW97GkqhJSrt': {
-            'notes': {
-                '-H7Sf_75DG17GosaCXad': {
-                    'title': 'Readme'
-                },
-                '-S5Ac_49SA24xawzAGbj': {
-                    'title': 'Brainstorm ideas'
-                }
-            },
-            'title': 'The best journal book'
-        },
-        '-S4Gh_31GJ30JhbpZBds': {
-            'notes': {
-                '-A5Gh_51HC34JabpZCsd': {
-                    'title': 'Second Note'
-                },
-                '-B7Jl_51HA64ScdyCGgj': {
-                    'title': 'First Note'
-                }
-            },
-            'title': 'The Second Best Notebook'
-        }
-    }
-}
-
-const result = formatter(input)
-
-console.log(result)
