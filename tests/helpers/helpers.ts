@@ -1,27 +1,27 @@
 const wellFormatedInput1 = {
-    'name': 'Sebastian De Vita',
-    'notebooks': {
+    name: 'Sebastian De Vita',
+    notebooks: {
         '-J4Dk_75HW97GkqhJSrt': {
-            'notes': {
+            notes: {
                 '-H7Sf_75DG17GosaCXad': {
-                    'title': 'Readme'
+                    title: 'Readme'
                 },
                 '-S5Ac_49SA24xawzAGbj': {
-                    'title': 'Brainstorm ideas'
+                    title: 'Brainstorm ideas'
                 }
             },
-            'title': 'The best journal book'
+            title: 'The best journal book'
         },
         '-S4Gh_31GJ30JhbpZBds': {
             'notes': {
                 '-A5Gh_51HC34JabpZCsd': {
-                    'title': 'Second Note'
+                    title: 'Second Note'
                 },
                 '-B7Jl_51HA64ScdyCGgj': {
-                    'title': 'First Note'
+                    title: 'First Note'
                 }
             },
-            'title': 'The Second Best Notebook'
+            title: 'The Second Best Notebook'
         }
     }
 }
@@ -58,4 +58,38 @@ const wellFormatedOutput1 = {
     }]
 }
 
-export { wellFormatedInput1, wellFormatedOutput1 }
+const wellFormatedInput2 = [
+    wellFormatedInput1,
+    {
+        name: 'Andres Suarez',
+        notebooks: {
+            '-D2Az_76SXA18sacAQli': {
+                notes: {
+                    '-A1Xh_15HYR45wuyCLhu': {
+                        title: 'Apuntes Algo3'
+                    }
+                },
+                title: 'Lista de la compra'
+            }
+        }
+    }
+]
+
+const wellFormatedOutput2 = [
+    wellFormatedOutput1,
+    {
+        name: 'Andres Suarez',
+        notebooks: [{
+            id: '-D2Az_76SXA18sacAQli',
+            title: 'Lista de la compra',
+            notes: [
+                {
+                    id: '-A1Xh_15HYR45wuyCLhu',
+                    title: 'Apuntes Algo3'
+                }
+            ]
+        }]
+    }
+]
+
+export { wellFormatedInput1, wellFormatedOutput1, wellFormatedInput2, wellFormatedOutput2 }

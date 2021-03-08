@@ -1,4 +1,4 @@
-function mapObjectToArray (obj: any, keyName: string){
+function mapObjectToArray(obj: any, keyName: string) {
     const mappedDatas: any[] = []
     for (const key in obj) {
         if (Object.prototype.hasOwnProperty.call(obj, key)) {
@@ -26,26 +26,34 @@ function hasAllFirebaseKeysInside(variable: any): boolean {
 /**
  * Flattens the format recieved from the Firebase Realtime Database
  * @constructor
- * @param {JSON} data - The data that's attempt to format, it should be extracted from Firebase's ```DataSnapshot``` .
+ * @param {JSON|Array.<Object>} data - The data that's attempt to format, it should be extracted from Firebase's ```DataSnapshot``` .
  * @param {string} [key='id'] - Name of the new attribute that contains the entities's ids.
  */
 export default function firebaseDbFormatter(data: any, key = 'id'): any {
+    if (Array.isArray(data)) {
+        return data.map(obj => firebaseDbObjectFormatter(obj, key))
+    } else {
+        return firebaseDbObjectFormatter(data, key)
+    }
 
-    const isAnIterableProperty = (property: any): boolean => hasAllFirebaseKeysInside(data[property]) && property in data
+}
+
+function firebaseDbObjectFormatter(obj: any, key = 'id'): any {
+    const isAnIterableProperty = (property: any): boolean => hasAllFirebaseKeysInside(obj[property]) && property in obj
 
     const hasIterableProperties = (element: any): boolean => listProperties(element).some((property: any) => isAnIterableProperty(property))
 
-    if (hasIterableProperties(data)) {
-        const properties = listProperties(data)
+    if (hasIterableProperties(obj)) {
+        const properties = listProperties(obj)
         properties.map(property => {
             if (isAnIterableProperty(property)) {
-                data[property] = mapObjectToArray(data[property], key)
-                data[property].forEach((nestedObj: any) => {
+                obj[property] = mapObjectToArray(obj[property], key)
+                obj[property].forEach((nestedObj: any) => {
                     firebaseDbFormatter(nestedObj, key)
                 })
             }
         })
     }
 
-    return data
+    return obj
 }
