@@ -1,0 +1,9 @@
+src/
+.npmignore
+node_modules/
+.travis.yml
+jest.config.js
+tests/
+.eslintignore
+.eslintrc.json
+tsconfig.json
