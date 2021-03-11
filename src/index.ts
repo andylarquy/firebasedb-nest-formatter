@@ -41,7 +41,13 @@ export default function firebaseDbFormatter(data: any, key = 'id'): any {
 function firebaseDbObjectFormatter(obj: any, key = 'id'): any {
     const isAnIterableProperty = (property: any): boolean => hasAllFirebaseKeysInside(obj[property]) && property in obj
 
+    const isAnIterablePropertyCustom = (obj: any, property: any): boolean => hasAllFirebaseKeysInside(obj[property]) && property in obj
+
+    const hasIterablePropertiesCustom = (element: any): boolean => listProperties(element).some((property: any) => isAnIterablePropertyCustom(element, property))
+
     const hasIterableProperties = (element: any): boolean => listProperties(element).some((property: any) => isAnIterableProperty(property))
+
+    const isAListOfIterables = (element: any): boolean => listProperties(element).every(property => isFirebaseValidKey(property))
 
     if (hasIterableProperties(obj)) {
         const properties = listProperties(obj)
@@ -53,6 +59,35 @@ function firebaseDbObjectFormatter(obj: any, key = 'id'): any {
                 })
             }
         })
+    }
+
+    //TODO: Fix this absolute piece of garbage
+    if (isAListOfIterables(obj)) {
+        const listOfIds = listProperties(obj)
+
+        listOfIds.map(id => {
+            const insideObj = obj[id]
+
+            if (hasIterablePropertiesCustom(insideObj)) {
+                const properties = listProperties(insideObj)
+                properties.map(property => {
+                    if (isAnIterablePropertyCustom(insideObj, property)) {
+                        insideObj[property] = mapObjectToArray(insideObj[property], key)
+                        insideObj[property].forEach((nestedObj: any) => {
+                            firebaseDbFormatter(nestedObj, key)
+                        })
+                    }
+                })
+            }
+        })
+
+
+        const newObj: any[] = []
+        listOfIds.map(id => {
+            newObj.push({ [key]: id, ...obj[id] })
+        })
+
+        return newObj
     }
 
     return obj
